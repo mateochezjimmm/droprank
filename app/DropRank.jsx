@@ -32,23 +32,8 @@ const ok = (b, s, x, y) => { for (let r = 0; r < s.length; r++) for (let c = 0; 
 const stamp = (b, p) => { const n = b.map(r => [...r]); for (let r = 0; r < p.shape.length; r++) for (let c = 0; c < p.shape[0].length; c++) if (p.shape[r][c] && p.y + r >= 0) n[p.y + r][p.x + c] = p.color; return n; };
 const clr = b => { let n = 0; const nb = b.filter(r => { if (r.every(c => c)) { n++; return false; } return true; }); while (nb.length < ROWS) nb.unshift(Array(COLS).fill(null)); return { b: nb, n }; };
 
-const LB = [
-  { name: "launchfast.io", score: 4820, runs: 12, clicks: 341, t: "2h ago" },
-  { name: "autoship.dev", score: 3150, runs: 8, clicks: 127, t: "45m ago" },
-  { name: "@indie_sara", score: 2900, runs: 15, clicks: 89, t: "1h ago" },
-  { name: "apiboss.com", score: 2340, runs: 6, clicks: 203, t: "3h ago" },
-  { name: "deploykit.io", score: 1870, runs: 4, clicks: 56, t: "30m ago" },
-  { name: "neonstack.app", score: 1650, runs: 9, clicks: 44, t: "5h ago" },
-  { name: "@devmarco", score: 1200, runs: 3, clicks: 31, t: "4h ago" },
-  { name: "shipfast.tools", score: 980, runs: 7, clicks: 18, t: "6h ago" },
-  { name: "formhero.co", score: 870, runs: 2, clicks: 12, t: "1h ago" },
-  { name: "cachelab.dev", score: 640, runs: 5, clicks: 8, t: "7h ago" },
-  { name: "@buildinpublic", score: 520, runs: 11, clicks: 5, t: "2h ago" },
-  { name: "refactor.ai", score: 410, runs: 1, clicks: 3, t: "8h ago" },
-  { name: "stackpilot.co", score: 380, runs: 3, clicks: 2, t: "9h ago" },
-  { name: "devlaunch.me", score: 290, runs: 2, clicks: 1, t: "10h ago" },
-  { name: "@codejess", score: 210, runs: 4, clicks: 0, t: "11h ago" },
-];
+// Leaderboard starts empty — will be populated by real users
+const LB = [];
 
 const MINIS = [
   { s: [[1,1],[1,1]], c: "#c0392b" },
@@ -65,21 +50,21 @@ function Mini({ i }) {
   return (<div style={{ display: "inline-grid", gridTemplateColumns: `repeat(${p.s[0].length}, ${z}px)` }}>{p.s.flat().map((v, j) => (<div key={j} style={{ width: z, height: z, background: v ? p.c : "transparent", borderRadius: v ? 2 : 0, border: v ? "1px solid rgba(0,0,0,0.15)" : "none" }} />))}</div>);
 }
 
-// ── SPONSOR STRIP (compact) ──
 function SponsorStrip() {
-  const sp = [{ sold: true, name: "supastarter.dev" }, null, null, { sold: true, name: "agently.dev" }, null, null];
+  const sp = [null, null, null, null, null, null];
   return (
     <div style={{ display: "flex", gap: 6, padding: "8px 0", justifyContent: "center", flexWrap: "wrap" }}>
       {sp.map((s, i) => (
-        <div key={i} style={{ border: `1px dashed ${s?.sold ? C.border : C.borderDash}`, padding: s?.sold ? "6px 12px" : "6px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, background: s?.sold ? C.goldLight : "rgba(26,74,122,0.04)", whiteSpace: "nowrap" }}>
-          {s?.sold ? (<><span style={{ fontFamily: F, fontSize: 6, color: C.gold }}>SPONSOR</span><span style={{ fontSize: 14, color: C.white }}>{s.name}</span></>) : (<><div style={{ animation: `bob ${2.5 + i * 0.4}s ease-in-out infinite` }}><Mini i={i} /></div><span style={{ fontFamily: F, fontSize: 7, color: C.gold }}>$50</span><span style={{ fontFamily: F, fontSize: 5, color: C.muted }}>AVAIL</span></>)}
+        <div key={i} style={{ border: `1px dashed ${C.borderDash}`, padding: "6px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, background: "rgba(26,74,122,0.04)", whiteSpace: "nowrap" }}>
+          <div style={{ animation: `bob ${2.5 + i * 0.4}s ease-in-out infinite` }}><Mini i={i} /></div>
+          <span style={{ fontFamily: F, fontSize: 7, color: C.gold }}>$50</span>
+          <span style={{ fontFamily: F, fontSize: 5, color: C.muted }}>AVAIL</span>
         </div>
       ))}
     </div>
   );
 }
 
-// ── SIDEBAR SLOT (BIGGER) ──
 function SideSlot({ i, ad }) {
   if (ad) return (
     <div style={{ border: `1px solid ${C.border}`, padding: "18px 8px", textAlign: "center", marginBottom: 10, background: C.card, minHeight: 140, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
@@ -99,7 +84,6 @@ function SideSlot({ i, ad }) {
   );
 }
 
-// ── TETRIS GAME ──
 function Game({ product, onDone }) {
   const [board, setBoard] = useState(mkB);
   const [pc, setPc] = useState(() => rndP());
@@ -181,7 +165,6 @@ function Game({ product, onDone }) {
   );
 }
 
-// ── GATE MODAL (Pay $2 OR Watch Ad) ──
 function GateModal({ product, onPaid, onWatchAd, onClose }) {
   const [loading, setLoading] = useState(false);
   const [watchingAd, setWatchingAd] = useState(false);
@@ -201,20 +184,15 @@ function GateModal({ product, onPaid, onWatchAd, onClose }) {
       <div style={{ position: "fixed", inset: 0, zIndex: 1100, background: "rgba(45,31,14,0.7)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
         <div style={{ background: "#fff", borderRadius: 8, padding: "32px 28px", maxWidth: 400, width: "90vw", textAlign: "center", boxShadow: "0 8px 40px rgba(0,0,0,0.3)", border: `3px solid ${C.border}` }}>
           <div style={{ fontFamily: F, fontSize: 8, color: C.muted, marginBottom: 12, letterSpacing: 1 }}>ADVERTISEMENT</div>
-
-          {/* Simulated ad slot */}
-          <div style={{ width: "100%", height: 200, background: "#f0f0f0", border: `1px solid #ddd`, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+          <div style={{ width: "100%", height: 200, background: "#f0f0f0", border: "1px solid #ddd", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontFamily: F, fontSize: 8, color: "#aaa" }}>AD CONTENT</div>
               <div style={{ fontFamily: F, fontSize: 6, color: "#ccc", marginTop: 4 }}>Google AdSense / Rewarded Ad</div>
             </div>
           </div>
-
-          {/* Timer bar */}
           <div style={{ width: "100%", height: 6, background: "#eee", borderRadius: 3, overflow: "hidden", marginBottom: 10 }}>
             <div style={{ width: `${((15 - adTimer) / 15) * 100}%`, height: "100%", background: C.blue, borderRadius: 3, transition: "width 1s linear" }} />
           </div>
-
           <div style={{ fontFamily: F, fontSize: 10, color: adTimer > 0 ? C.muted : C.green }}>
             {adTimer > 0 ? (
               <>Skip in <span style={{ color: C.red }}>{adTimer}s</span></>
@@ -233,13 +211,10 @@ function GateModal({ product, onPaid, onWatchAd, onClose }) {
     <div style={{ position: "fixed", inset: 0, zIndex: 1100, background: "rgba(45,31,14,0.6)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: C.bg, border: `3px solid ${C.border}`, borderRadius: 8, padding: "28px 24px", maxWidth: 380, width: "90vw", textAlign: "center", boxShadow: "0 8px 40px rgba(0,0,0,0.25)" }}>
         <div style={{ fontFamily: F, fontSize: 13, color: C.blue, marginBottom: 14, lineHeight: 1.8 }}>List your product</div>
-
         <div style={{ background: C.surface, border: `1px dashed ${C.border}`, padding: "10px 14px", marginBottom: 20, borderRadius: 4 }}>
           <div style={{ fontFamily: F, fontSize: 7, color: C.muted, marginBottom: 3 }}>LISTING</div>
           <div style={{ fontSize: 20, color: C.white, wordBreak: "break-all" }}>{product}</div>
         </div>
-
-        {/* Option 1: Pay $2 */}
         <div style={{ background: C.surface, border: `2px solid ${C.border}`, borderRadius: 6, padding: "16px", marginBottom: 12 }}>
           <div style={{ fontFamily: F, fontSize: 8, color: C.gold, marginBottom: 6, letterSpacing: 1 }}>⭐ PREMIUM</div>
           <div style={{ fontFamily: F, fontSize: 22, color: C.white, marginBottom: 4 }}>$2</div>
@@ -253,15 +228,11 @@ function GateModal({ product, onPaid, onWatchAd, onClose }) {
             </button>
           </div>
         </div>
-
-        {/* Divider */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "8px 0" }}>
           <div style={{ flex: 1, height: 1, background: C.border }} />
           <span style={{ fontFamily: F, fontSize: 8, color: C.muted }}>OR</span>
           <div style={{ flex: 1, height: 1, background: C.border }} />
         </div>
-
-        {/* Option 2: Watch Ad */}
         <div style={{ background: C.surface, border: `1px dashed ${C.border}`, borderRadius: 6, padding: "14px", marginTop: 12 }}>
           <div style={{ fontFamily: F, fontSize: 8, color: C.muted, marginBottom: 6 }}>FREE</div>
           <div style={{ fontSize: 16, color: C.white, marginBottom: 4 }}>Watch a 15s ad</div>
@@ -270,14 +241,12 @@ function GateModal({ product, onPaid, onWatchAd, onClose }) {
             ▶ WATCH AD TO PLAY
           </button>
         </div>
-
         <div onClick={onClose} style={{ fontFamily: F, fontSize: 8, color: C.muted, cursor: "pointer", textDecoration: "underline", marginTop: 14 }}>cancel</div>
       </div>
     </div>
   );
 }
 
-// ── MAIN ──
 export default function App() {
   const [url, setUrl] = useState("");
   const [playing, setPlaying] = useState(false);
@@ -292,13 +261,15 @@ export default function App() {
     setGating(true);
   };
   const onPaid = () => { setGating(false); setPaid(true); setPlaying(true); };
-  const onWatchAd = () => { setGating(false); setPlaying(true); }; // free users see ad each time
+  const onWatchAd = () => { setGating(false); setPlaying(true); };
 
   const lb = (() => {
     if (!best) return LB;
     const me = { name: url || "you", score: best, runs: 1, clicks: 0, t: "just now", me: true };
     return [...LB, me].sort((a, b) => b.score - a.score);
   })();
+
+  const champ = lb.length > 0 ? lb[0] : null;
 
   const rk = i => i === 0 ? "👑" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`;
   const rc = i => i === 0 ? C.gold : i === 1 ? C.silver : i === 2 ? C.bronze : C.muted;
@@ -327,29 +298,34 @@ export default function App() {
       {/* CHAMPION BAR */}
       <div style={{ background: C.card, borderBottom: `2px solid ${C.border}` }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "9px 16px", flexWrap: "wrap" }}>
-          <span style={{ fontFamily: F, fontSize: 8, color: C.gold }}>👑 REIGNING CHAMPION</span>
-          <span style={{ fontSize: 20, color: C.white }}>{LB[0].name}</span>
-          <span style={{ fontFamily: F, fontSize: 13, color: C.gold }}>{LB[0].score.toLocaleString()}</span>
-          <span style={{ fontSize: 15, color: C.muted }}>· {LB[0].clicks} clicks sent</span>
+          {champ ? (
+            <>
+              <span style={{ fontFamily: F, fontSize: 8, color: C.gold }}>👑 REIGNING CHAMPION</span>
+              <span style={{ fontSize: 20, color: C.white }}>{champ.name}</span>
+              <span style={{ fontFamily: F, fontSize: 13, color: C.gold }}>{champ.score.toLocaleString()}</span>
+            </>
+          ) : (
+            <span style={{ fontFamily: F, fontSize: 8, color: C.muted }}>👑 NO CHAMPION YET — BE THE FIRST TO PLAY</span>
+          )}
         </div>
       </div>
 
       {/* 3-COL */}
       <div className="mg" style={{ display: "grid", gridTemplateColumns: "160px 1fr 160px", gap: 0, alignItems: "start" }}>
 
-        {/* LEFT */}
         <div className="sb" style={{ paddingTop: 12, position: "sticky", top: 12, paddingLeft: 8, paddingRight: 4 }}>
           {[0, 1, 2, 3, 4].map(i => <SideSlot key={`l${i}`} i={i} ad={i % 2 === 0} />)}
         </div>
 
-        {/* CENTER */}
         <div style={{ maxWidth: 900, margin: "0 auto", width: "100%", padding: "0 12px" }}>
+          {/* Stats */}
           <div style={{ display: "flex", justifyContent: "center", gap: 28, padding: "11px 0", borderBottom: `1px dashed ${C.borderDash}`, flexWrap: "wrap" }}>
-            {[{ n: "10,812", l: "VISITORS" }, { n: "■ 236", l: "ONLINE", c: C.green }, { n: "34,644", l: "DROPS TODAY" }, { n: "598", l: "PRODUCTS" }].map(s => (
+            {[{ n: "0", l: "VISITORS" }, { n: "■ 0", l: "ONLINE", c: C.green }, { n: "0", l: "DROPS TODAY" }, { n: "0", l: "PRODUCTS" }].map(s => (
               <div key={s.l} style={{ textAlign: "center" }}><div style={{ fontSize: 20, color: s.c || C.white, fontWeight: "bold" }}>{s.n}</div><div style={{ fontFamily: F, fontSize: 7, color: C.muted, marginTop: 2 }}>{s.l}</div></div>
             ))}
           </div>
 
+          {/* Hero */}
           <div style={{ textAlign: "center", padding: "28px 12px 16px" }}>
             <div style={{ fontFamily: F, fontSize: 16, color: C.blue, lineHeight: 2, marginBottom: 6 }}>Drop blocks.<br />Claim #1.</div>
             <div style={{ fontSize: 19, color: C.muted, maxWidth: 480, margin: "0 auto 18px", lineHeight: 1.5 }}>
@@ -374,9 +350,16 @@ export default function App() {
 
           <SponsorStrip />
 
+          {/* Leaderboard */}
           <div style={{ paddingBottom: 32 }}>
             <div style={{ textAlign: "center", padding: "9px", background: C.blue, fontFamily: F, fontSize: 9, color: "#fff", letterSpacing: 2 }}>🏆 TODAY'S BEST 🏆</div>
             <div style={{ textAlign: "center", padding: "5px", fontFamily: F, fontSize: 7, color: C.muted }}>{lb.length} PRODUCTS DROPPING TODAY</div>
+            {lb.length === 0 && (
+              <div style={{ textAlign: "center", padding: "40px 20px", color: C.muted }}>
+                <div style={{ fontSize: 24, marginBottom: 8 }}>No products yet today</div>
+                <div style={{ fontFamily: F, fontSize: 8, color: C.muted }}>Be the first to drop and claim #1</div>
+              </div>
+            )}
             {lb.map((item, i) => (
               <div key={item.name + i} style={{
                 display: "flex", alignItems: "center", padding: "11px 12px",
@@ -402,7 +385,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* RIGHT */}
         <div className="sb" style={{ paddingTop: 12, position: "sticky", top: 12, paddingRight: 8, paddingLeft: 4 }}>
           {[5, 6, 3, 1, 4].map((pi, i) => <SideSlot key={`r${i}`} i={pi} ad={i % 2 !== 0} />)}
         </div>
